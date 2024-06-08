@@ -26,7 +26,9 @@ class AdviceController extends AbstractController
     #[Route('/api/advices', name: 'advices', methods: ['GET'])]
     public function getAllAdvices(): JsonResponse
     {
-        $advices = $this->adviceRepository->findAll();
+        $currentMonth = date("m");
+
+        $advices = $this->adviceRepository->findAdvicesByMonth($currentMonth);
         $jsonAdvices = $this->serializer->serialize($advices, 'json');
 
         return new JsonResponse($jsonAdvices, Response::HTTP_OK, [], true);
