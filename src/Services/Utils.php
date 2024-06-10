@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Repository\UserRepository;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Token\Parser;
+use Symfony\Component\HttpFoundation\Request;
 
 readonly class Utils
 {
@@ -12,8 +13,11 @@ readonly class Utils
     {
     }
 
-    public function getUserCity(string $token): string
+    public function getUserCity(Request $request): string
     {
+        $token = $request->headers->get('Authorization');
+        $token = substr($token, 7); // Supprimer le préfixe "Bearer "
+
         $parser = new Parser(new JoseEncoder());
         $jwt = $parser->parse($token);
 

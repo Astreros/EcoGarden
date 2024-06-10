@@ -15,6 +15,12 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ExternalWeatherApiController extends AbstractController
 {
+    private const API_URL = 'https://api.openweathermap.org/data/2.5/weather?q=';
+    private const API_KEY = '&appid=d65cc6cc08368be1ac9f2d11d37d8405';
+    private const UNITS = '&units=metric';
+    private const LANG = '&lang=fr';
+
+
     public function __construct(private readonly Utils $utils,
                                 private readonly HttpClientInterface $httpClient)
     {
@@ -29,17 +35,11 @@ class ExternalWeatherApiController extends AbstractController
     #[Route('/api/weather', name: 'weatherByCurrentUser', methods: ['GET'])]
     public function getWeatherByCurrentUser(Request $request): JsonResponse
     {
-        $token = $request->headers->get('Authorization');
-        $token = substr($token, 7); // Supprimer le préfixe "Bearer "
-
-        $apiKey = "d65cc6cc08368be1ac9f2d11d37d8405";
-        $units = "metric";
-        $lang = "fr";
-        $city = $this->utils->getUserCity($token);
+        $city = $this->utils->getUserCity($request);
 
         $response = $this->httpClient->request(
             "GET",
-            "https://api.openweathermap.org/data/2.5/weather?q={$city}&appid={$apiKey}&units={$units}&lang={$lang}"
+            self::API_URL . $city . self::API_KEY . self::UNITS . self::LANG
         );
 
         return new JsonResponse($response->getContent(), $response->getStatusCode(), [], true);
