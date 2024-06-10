@@ -32,7 +32,7 @@ class ExternalWeatherApiController extends AbstractController
         $token = $request->headers->get('Authorization');
         $token = substr($token, 7); // Supprimer le préfixe "Bearer "
 
-        $apiKey = "edb0cb32c26a67d91c49ddd624e85465";
+        $apiKey = "d65cc6cc08368be1ac9f2d11d37d8405";
         $units = "metric";
         $lang = "fr";
         $city = $this->utils->getUserCity($token);
