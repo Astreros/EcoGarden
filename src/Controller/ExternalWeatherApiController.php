@@ -46,7 +46,7 @@ class ExternalWeatherApiController extends AbstractController
 
         $idCache = "getWeatherByCity" . $city;
 
-        $weather = $this->cache->get($idCache, function (ItemInterface $item) use ($city) {
+        $jsonWeather = $this->cache->get($idCache, function (ItemInterface $item) use ($city) {
 
             $item->tag('weatherCache');
             $item->expiresAfter(3600);
@@ -60,7 +60,7 @@ class ExternalWeatherApiController extends AbstractController
         });
 
         return new JsonResponse(
-            $weather, Response::HTTP_OK, [], true
+            $jsonWeather, Response::HTTP_OK, [], true
         );
     }
 
@@ -76,7 +76,7 @@ class ExternalWeatherApiController extends AbstractController
     {
         $idCache = "getWeatherByCity" . $city;
 
-        $weather = $this->cache->get($idCache, function (ItemInterface $item) use ($city) {
+        $jsonWeather = $this->cache->get($idCache, function (ItemInterface $item) use ($city) {
 
            $item->tag('weatherCache');
            $item->expiresAfter(3600);
@@ -90,7 +90,7 @@ class ExternalWeatherApiController extends AbstractController
         });
 
         return new JsonResponse(
-            $weather, Response::HTTP_OK, [], true
+            $jsonWeather, Response::HTTP_OK, [], true
         );
     }
 }
