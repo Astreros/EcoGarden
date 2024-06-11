@@ -3,10 +3,15 @@
 namespace App\Controller;
 
 use App\Services\Utils;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
@@ -22,7 +27,8 @@ class ExternalWeatherApiController extends AbstractController
 
 
     public function __construct(private readonly Utils $utils,
-                                private readonly HttpClientInterface $httpClient)
+                                private readonly HttpClientInterface $httpClient,
+                                private readonly TagAwareCacheInterface $cache)
     {
     }
 
@@ -31,23 +37,62 @@ class ExternalWeatherApiController extends AbstractController
      * @throws ServerExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
+     * @throws InvalidArgumentException
      */
     #[Route('/api/weather', name: 'weatherByCurrentUser', methods: ['GET'])]
     public function getWeatherByCurrentUser(Request $request): JsonResponse
     {
         $city = $this->utils->getUserCity($request);
 
-        $response = $this->httpClient->request(
-            "GET",
-            self::API_URL . $city . self::API_KEY . self::UNITS . self::LANG
-        );
+        $idCache = "getWeatherByCity" . $city;
 
-        return new JsonResponse($response->getContent(), $response->getStatusCode(), [], true);
+        $weather = $this->cache->get($idCache, function (ItemInterface $item) use ($city) {
+            echo "Pas encore en cache";
+
+            $item->tag('weatherCache');
+            $item->expiresAfter(3600);
+
+            $response = $this->httpClient->request(
+                "GET",
+                self::API_URL . $city . self::API_KEY . self::UNITS . self::LANG
+            );
+
+            return $response->getContent();
+        });
+
+        return new JsonResponse(
+            $weather, Response::HTTP_OK, [], true
+        );
     }
 
+    /**
+     * @throws TransportExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ClientExceptionInterface
+     * @throws InvalidArgumentException
+     */
     #[Route('/api/weather/{city}', name: 'weatherByCity', methods: ['GET'])]
-    public function getWeatherByCity(): JsonResponse
+    public function getWeatherByCity(string $city): JsonResponse
     {
-        return $this->json([]);
+        $idCache = "getWeatherByCity" . $city;
+
+        $weather = $this->cache->get($idCache, function (ItemInterface $item) use ($city) {
+           echo "Pas encore en cache";
+
+           $item->tag('weatherCache');
+           $item->expiresAfter(3600);
+
+           $response = $this->httpClient->request(
+               "GET",
+               self::API_URL . $city . self::API_KEY . self::UNITS . self::LANG
+           );
+
+            return $response->getContent();
+        });
+
+        return new JsonResponse(
+            $weather, Response::HTTP_OK, [], true
+        );
     }
 }
