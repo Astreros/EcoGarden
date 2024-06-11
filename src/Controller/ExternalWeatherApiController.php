@@ -47,7 +47,6 @@ class ExternalWeatherApiController extends AbstractController
         $idCache = "getWeatherByCity" . $city;
 
         $weather = $this->cache->get($idCache, function (ItemInterface $item) use ($city) {
-            echo "Pas encore en cache";
 
             $item->tag('weatherCache');
             $item->expiresAfter(3600);
@@ -78,7 +77,6 @@ class ExternalWeatherApiController extends AbstractController
         $idCache = "getWeatherByCity" . $city;
 
         $weather = $this->cache->get($idCache, function (ItemInterface $item) use ($city) {
-           echo "Pas encore en cache";
 
            $item->tag('weatherCache');
            $item->expiresAfter(3600);
