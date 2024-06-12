@@ -13,7 +13,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Attributes as OA;
 
 class UserController extends AbstractController
@@ -59,10 +58,6 @@ class UserController extends AbstractController
         return new JsonResponse($jsonUser, Response::HTTP_CREATED, [], true);
     }
 
-    /**
-     * @throws JsonException
-     * @throws \JsonException
-     */
     #[Route('/api/user/{id}', name: 'updateUser', methods: ['PUT'])]
     #[OA\RequestBody(
         description: 'Ajouter un conseil', required: false, content: new OA\JsonContent(
