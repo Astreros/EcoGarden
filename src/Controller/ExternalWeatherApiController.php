@@ -3,13 +3,13 @@
 namespace App\Controller;
 
 use App\Services\Utils;
+use Nelmio\ApiDocBundle\Annotation\Operation;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
@@ -17,6 +17,7 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use OpenApi\Attributes as OA;
 
 class ExternalWeatherApiController extends AbstractController
 {
@@ -40,6 +41,11 @@ class ExternalWeatherApiController extends AbstractController
      * @throws InvalidArgumentException
      */
     #[Route('/api/weather', name: 'weatherByCurrentUser', methods: ['GET'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Retourne la météo pour la ville de l\'utilisateur authentifié'
+    )]
+    #[OA\Tag(name: 'Weather')]
     public function getWeatherByCurrentUser(Request $request): JsonResponse
     {
         $city = $this->utils->getUserCity($request);
@@ -72,6 +78,11 @@ class ExternalWeatherApiController extends AbstractController
      * @throws InvalidArgumentException
      */
     #[Route('/api/weather/{city}', name: 'weatherByCity', methods: ['GET'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Retourne la météo pour la ville demandé'
+    )]
+    #[OA\Tag(name: 'Weather')]
     public function getWeatherByCity(string $city): JsonResponse
     {
         $idCache = "getWeatherByCity" . $city;

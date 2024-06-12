@@ -7,6 +7,7 @@ use App\Repository\AdviceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,6 +17,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use OpenApi\Attributes as OA;
 
 class AdviceController extends AbstractController
 {
@@ -31,6 +34,15 @@ class AdviceController extends AbstractController
      * @throws InvalidArgumentException
      */
     #[Route('/api/advices', name: 'advices', methods: ['GET'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Retourne la liste des conseils pour le mois en cours',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Advice::class))
+        )
+    )]
+    #[OA\Tag(name: 'Advices')]
     public function getAllAdvices(): JsonResponse
     {
         $currentMonth = date("m");
@@ -53,8 +65,21 @@ class AdviceController extends AbstractController
      * @throws InvalidArgumentException
      */
     #[Route('/api/advices/{month}', name: 'monthAdvices', methods: ['GET'])]
+    #[OA\Response(
+        response: 200,
+        description: 'Retourne la liste des conseils pour un mois donné',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Advice::class))
+        )
+    )]
+    #[OA\Tag(name: 'Advices')]
     public function getAdvicesForMonth(int $month): JsonResponse
     {
+        if ($month < 1 || $month > 12) {
+            throw new BadRequestHttpException('Invalid monts value : month must be between 1 and 12');
+        }
+
         $idCache = "getAllAdvices" . $month;
 
         $jsonAdvices = $this->cache->get($idCache, function (ItemInterface $item) use ($month) {
@@ -70,6 +95,23 @@ class AdviceController extends AbstractController
     }
 
     #[Route('/api/advices', name: 'createAdvice', methods: ['POST'])]
+    #[OA\RequestBody(
+        description: 'Ajouter un conseil', required: true, content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'month', description: 'Mois du conseil (entre 1 et 12)', type: 'string'),
+                new OA\Property(property: 'adviceText', description: 'Contenu du conseil', type: 'string'),
+            ], type: 'object'
+        )
+    )]
+    #[OA\Response(
+        response: 201,
+        description: 'Renvoie le conseil nouvellement créé',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Advice::class))
+        )
+    )]
+    #[OA\Tag(name: 'Advices')]
     public function createAdvice(Request $request): JsonResponse
     {
         $advice = $this->serializer->deserialize($request->getContent(), Advice::class, 'json');
@@ -90,6 +132,19 @@ class AdviceController extends AbstractController
      * @throws InvalidArgumentException
      */
     #[Route('/api/advices/{id}', name: 'updateAdvice', methods: ['PUT'])]
+    #[OA\RequestBody(
+        description: 'Ajouter un conseil', required: false, content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'month', description: 'Mois du conseil (entre 1 et 12)', type: 'string'),
+                new OA\Property(property: 'adviceText', description: 'Contenu du conseil', type: 'string'),
+            ], type: 'object'
+        )
+    )]
+    #[OA\Response(
+        response: 204,
+        description: 'No Content'
+    )]
+    #[OA\Tag(name: 'Advices')]
     public function updateAdvice(Request $request, Advice $currentAdvice): JsonResponse
     {
         $updatedAdvice = $this->serializer->deserialize($request->getContent(), Advice::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $currentAdvice]);
@@ -111,6 +166,11 @@ class AdviceController extends AbstractController
      * @throws InvalidArgumentException
      */
     #[Route('/api/advices/{id}', name: 'deleteAdvice', methods: ['DELETE'])]
+    #[OA\Response(
+        response: 204,
+        description: 'No Content'
+    )]
+    #[OA\Tag(name: 'Advices')]
     public function deleteAdvice(Advice $advice): JsonResponse
     {
         $this->entityManager->remove($advice);

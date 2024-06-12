@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,6 +13,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use OpenApi\Attributes as OA;
 
 class UserController extends AbstractController
 {
@@ -25,6 +26,20 @@ class UserController extends AbstractController
     }
 
     #[Route('/api/user', name: 'createUser', methods: ['POST'])]
+    #[OA\RequestBody(
+        description: 'Ajouter un conseil', required: true, content: new OA\JsonContent(
+        properties: [
+            new OA\Property(property: 'email', description: 'Adresse email', type: 'string'),
+            new OA\Property(property: 'password', description: 'Mot de passe', type: 'string'),
+            new OA\Property(property: 'city', description: 'Ville de l\'utilisateur', type: 'string'),
+        ], type: 'object'
+    )
+    )]
+    #[OA\Response(
+        response: 204,
+        description: 'No Content'
+    )]
+    #[OA\Tag(name: 'User')]
     public function createUser(Request $request): JsonResponse
     {
         $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
@@ -46,8 +61,24 @@ class UserController extends AbstractController
 
     /**
      * @throws JsonException
+     * @throws \JsonException
      */
     #[Route('/api/user/{id}', name: 'updateUser', methods: ['PUT'])]
+    #[OA\RequestBody(
+        description: 'Ajouter un conseil', required: false, content: new OA\JsonContent(
+        properties: [
+            new OA\Property(property: 'email', description: 'Adresse email', type: 'string'),
+            new OA\Property(property: 'roles', description: 'Role ["ROLE_USER"] ou ["ROLE_ADMIN"]', type: 'array', items: new OA\Items(type: 'string')),
+            new OA\Property(property: 'password', description: 'Mot de passe', type: 'string'),
+            new OA\Property(property: 'city', description: 'Ville de l\'utilisateur', type: 'string'),
+        ], type: 'object'
+    )
+    )]
+    #[OA\Response(
+        response: 204,
+        description: 'No Content'
+    )]
+    #[OA\Tag(name: 'User')]
     public function updateUser(Request $request, User $currentUser): JsonResponse
     {
         $updatedUser = $this->serializer->deserialize($request->getContent(), User::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $currentUser]);
@@ -70,6 +101,11 @@ class UserController extends AbstractController
     }
 
     #[Route('/api/user/{id}', name: 'deleteUser', methods: ['DELETE'])]
+    #[OA\Response(
+        response: 204,
+        description: 'No Content'
+    )]
+    #[OA\Tag(name: 'User')]
     public function deleteUser(User $user): JsonResponse
     {
         $this->entityManager->remove($user);
