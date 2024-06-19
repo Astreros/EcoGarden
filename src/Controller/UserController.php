@@ -58,6 +58,9 @@ class UserController extends AbstractController
         return new JsonResponse($jsonUser, Response::HTTP_CREATED, [], true);
     }
 
+    /**
+     * @throws \JsonException
+     */
     #[Route('/api/user/{id}', name: 'updateUser', methods: ['PUT'])]
     #[OA\RequestBody(
         description: 'Ajouter un conseil', required: false, content: new OA\JsonContent(
