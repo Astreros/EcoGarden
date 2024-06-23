@@ -50,24 +50,7 @@ class ExternalWeatherApiController extends AbstractController
     {
         $city = $this->utils->getUserCity($request);
 
-        $idCache = "getWeatherByCity" . $city;
-
-        $jsonWeather = $this->cache->get($idCache, function (ItemInterface $item) use ($city) {
-
-            $item->tag('weatherCache');
-            $item->expiresAfter(3600);
-
-            $response = $this->httpClient->request(
-                "GET",
-                self::API_URL . $city . self::API_KEY . self::UNITS . self::LANG
-            );
-
-            return $response->getContent();
-        });
-
-        return new JsonResponse(
-            $jsonWeather, Response::HTTP_OK, [], true
-        );
+        return $this->getWeatherByCity($city);
     }
 
     /**
