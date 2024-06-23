@@ -47,18 +47,7 @@ class AdviceController extends AbstractController
     {
         $currentMonth = date("m");
 
-        $idCache = "getAllAdvices" . $currentMonth;
-
-        $jsonAdvices = $this->cache->get($idCache, function (ItemInterface $item) use ($currentMonth) {
-            $item->tag('advicesCache');
-            $item->expiresAfter(2592000);
-
-            $advices = $this->adviceRepository->findAdvicesByMonth($currentMonth);
-
-            return $this->serializer->serialize($advices, 'json');
-        });
-
-        return new JsonResponse($jsonAdvices, Response::HTTP_OK, [], true);
+        return $this->getAdvicesForMonth($currentMonth);
     }
 
     /**
@@ -74,7 +63,7 @@ class AdviceController extends AbstractController
         )
     )]
     #[OA\Tag(name: 'Advices')]
-    public function getAdvicesForMonth(int $month): JsonResponse
+    public function getAdvicesForMonth(int $month = null): JsonResponse
     {
         if ($month < 1 || $month > 12) {
             throw new BadRequestHttpException('Invalid monts value : month must be between 1 and 12');
@@ -84,7 +73,7 @@ class AdviceController extends AbstractController
 
         $jsonAdvices = $this->cache->get($idCache, function (ItemInterface $item) use ($month) {
             $item->tag('advicesCache');
-            $item->expiresAfter(2592000);
+            $item->expiresAfter(86400);
 
             $advices = $this->adviceRepository->findAdvicesByMonth($month);
 

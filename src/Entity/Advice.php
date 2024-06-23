@@ -6,6 +6,7 @@ use App\Repository\AdviceRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use OpenApi\Attributes as OA;
 
 #[ORM\Entity(repositoryClass: AdviceRepository::class)]
 class Advice
@@ -18,6 +19,7 @@ class Advice
     #[ORM\Column]
     #[Assert\NotBlank(message: 'Le mois est obligatoire (de 1 à 12)')]
     #[Assert\Range(notInRangeMessage: "La valeur {{ value }} n'est pas dans la plage de valeur valide ({{ min }} - {{ max }})", min: 1, max: 12)]
+    #[OA\Property(type: 'integer', maxLength: 2)]
     private ?int $month = null;
 
     #[ORM\Column(type: Types::TEXT)]
