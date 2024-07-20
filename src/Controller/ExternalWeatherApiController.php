@@ -21,7 +21,7 @@ use OpenApi\Attributes as OA;
 class ExternalWeatherApiController extends AbstractController
 {
     private const API_URL = 'https://api.openweathermap.org/data/2.5/weather?q=';
-    private const API_KEY = '&appid=35035d5f48e8f4029545a926450d1c51';
+    private const API_KEY = '&appid=';
     private const UNITS = '&units=metric';
     private const LANG = '&lang=fr';
 
