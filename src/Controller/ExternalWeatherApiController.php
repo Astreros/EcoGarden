@@ -21,15 +21,17 @@ use OpenApi\Attributes as OA;
 class ExternalWeatherApiController extends AbstractController
 {
     private const API_URL = 'https://api.openweathermap.org/data/2.5/weather?q=';
-    private const API_KEY = '&appid=';
     private const UNITS = '&units=metric';
     private const LANG = '&lang=fr';
+    private string $apiKeyOpenWeather;
 
 
     public function __construct(private readonly Utils $utils,
                                 private readonly HttpClientInterface $httpClient,
-                                private readonly TagAwareCacheInterface $cache)
+                                private readonly TagAwareCacheInterface $cache,
+                                string $apiKeyOpenWeather)
     {
+        $this->apiKeyOpenWeather = $apiKeyOpenWeather;
     }
 
     /**
@@ -76,7 +78,7 @@ class ExternalWeatherApiController extends AbstractController
 
            $response = $this->httpClient->request(
                "GET",
-               self::API_URL . $city . self::API_KEY . self::UNITS . self::LANG
+               self::API_URL . $city . $this->apiKeyOpenWeather . self::UNITS . self::LANG
            );
 
             return $response->getContent();

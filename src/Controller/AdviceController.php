@@ -72,7 +72,7 @@ class AdviceController extends AbstractController
         $idCache = "getAllAdvices" . $month;
 
         $jsonAdvices = $this->cache->get($idCache, function (ItemInterface $item) use ($month) {
-            $item->tag('advicesCache');
+            $item->tag('advicesCache' . $month);
             $item->expiresAfter(86400);
 
             $advices = $this->adviceRepository->findAdvicesByMonth($month);
@@ -134,7 +134,7 @@ class AdviceController extends AbstractController
         description: 'No Content'
     )]
     #[OA\Tag(name: 'Advices')]
-    public function updateAdvice(Request $request, Advice $currentAdvice): JsonResponse
+    public function updateAdvice(int $id, Request $request, Advice $currentAdvice): JsonResponse
     {
         $updatedAdvice = $this->serializer->deserialize($request->getContent(), Advice::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $currentAdvice]);
 
@@ -146,7 +146,7 @@ class AdviceController extends AbstractController
         $this->entityManager->persist($updatedAdvice);
         $this->entityManager->flush();
 
-        $this->cache->invalidateTags(["advicesCache"]);
+        $this->cache->invalidateTags(["advicesCache" . $id]);
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
@@ -160,12 +160,12 @@ class AdviceController extends AbstractController
         description: 'No Content'
     )]
     #[OA\Tag(name: 'Advices')]
-    public function deleteAdvice(Advice $advice): JsonResponse
+    public function deleteAdvice(int $id,Advice $advice): JsonResponse
     {
         $this->entityManager->remove($advice);
         $this->entityManager->flush();
 
-        $this->cache->invalidateTags(["advicesCache"]);
+        $this->cache->invalidateTags(["advicesCache" . $id]);
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
